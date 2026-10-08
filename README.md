@@ -61,10 +61,21 @@ web font.
 
 ### Vercel
 
-1. In Vercel, **Add New → Project**, and import `diabetic_pre_consultation`.
-2. Framework Preset: **Other**. Build Command: **leave empty**. Output
-   Directory: **leave empty** (the repository root is served).
+**[→ Import this repository into Vercel](https://vercel.com/new/import?s=https%3A%2F%2Fgithub.com%2Fppabnaim-cloud%2Fdiabetic_pre_consultation)**
+
+That link opens Vercel's import flow with this repository already selected.
+Then:
+
+1. Framework Preset: **Other**.
+2. Build Command: **leave empty**. Output Directory: **leave empty** — the
+   repository root is served as-is.
 3. Deploy.
+
+There is nothing to configure because `index.html` is committed as a built
+artefact. If Vercel cannot see the repository, it is because this repo is
+private and the Vercel GitHub app has not been granted access to it — grant
+it under **Vercel → Settings → Git → GitHub → Manage Access**, or make the
+repository public.
 
 `vercel.json` sets the security headers: a content-security policy that
 permits only this origin plus Google Fonts, `noindex` so the form never
