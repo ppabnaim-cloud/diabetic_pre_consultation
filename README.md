@@ -55,9 +55,10 @@ stage, diagnose, or suggest a drug.
 
 ## Deploying it
 
-`index.html` is **committed to this repository as a built artefact**. There is
-no build step at serve time, no bundler, no API, no database. One file, plus a
-web font.
+The deployed site is **one file**: `public/index.html`. No bundler at serve
+time, no API, no database — just that page plus a web font. It is committed,
+so the repository can also be served as-is by anything that can serve a
+directory.
 
 ### Vercel
 
@@ -67,15 +68,27 @@ That link opens Vercel's import flow with this repository already selected.
 Then:
 
 1. Framework Preset: **Other**.
-2. Build Command: **leave empty**. Output Directory: **leave empty** — the
-   repository root is served as-is.
+2. Leave every build setting alone — `vercel.json` already specifies all
+   three, so the dialog's defaults do not matter:
+
+   | Setting | Value | Why |
+   |---|---|---|
+   | `installCommand` | `npm install --omit=dev …` | `build/build.js` uses nothing but node's own `fs` and `path`, so there are no production dependencies to install. Omitting dev dependencies skips Playwright and its browser download. |
+   | `buildCommand` | `npm run build` | The build re-runs on every deploy, so its gates — unique ids, both languages present, every flag rule executing, the summary generating — run in CI too. |
+   | `outputDirectory` | `public` | Only the page is served. `src/`, `build/`, `tests/` and `package.json` are not published. |
+
 3. Deploy.
 
-There is nothing to configure because `index.html` is committed as a built
-artefact. If Vercel cannot see the repository, it is because this repo is
-private and the Vercel GitHub app has not been granted access to it — grant
-it under **Vercel → Settings → Git → GitHub → Manage Access**, or make the
-repository public.
+If Vercel cannot see the repository, it is because this repo is private and
+the Vercel GitHub app has not been granted access to it — grant it under
+**Vercel → Settings → Git → GitHub → Manage Access**, or make the repository
+public.
+
+> **If the deploy fails with `No Output Directory named "public" found`**,
+> the project has a stale Output Directory override set in the Vercel
+> dashboard from an earlier attempt. Project → Settings → Build & Deployment
+> → Output Directory → switch it back to **Override: off** so `vercel.json`
+> is used, then redeploy.
 
 `vercel.json` sets the security headers: a content-security policy that
 permits only this origin plus Google Fonts, `noindex` so the form never
@@ -83,10 +96,11 @@ reaches a search engine, and `frame-ancestors 'none'`.
 
 ### Anywhere else
 
-It is a static page. GitHub Pages, Netlify, an Apache directory, a clinic
-tablet with `index.html` on it and no network at all — all work identically,
-though a host other than Vercel will not apply `vercel.json`, so set the
-equivalent headers yourself if you have the means.
+It is a static page. Serve the `public/` directory. GitHub Pages, Netlify, an
+Apache directory, a clinic tablet with `public/index.html` copied onto it and
+no network at all — all work identically, though a host other than Vercel
+will not apply `vercel.json`, so set the equivalent headers yourself if you
+have the means.
 
 ### Configuration
 
@@ -138,13 +152,13 @@ does not.
 
 ```bash
 npm install       # playwright, for the tests
-npm run build     # src/ -> index.html
+npm run build     # src/ -> public/index.html
 npm test          # build, then 77 browser assertions
 npm run serve     # http://localhost:8099
 ```
 
-**Edit the partials in `src/`, never `index.html`** — it is generated and
-will be overwritten.
+**Edit the partials in `src/`, never `public/index.html`** — it is generated
+and will be overwritten on the next build.
 
 | File | Holds |
 |---|---|
@@ -159,7 +173,7 @@ will be overwritten.
 
 ### The build is a gate
 
-`npm run build` refuses to write `index.html` unless:
+`npm run build` refuses to write `public/index.html` unless:
 
 - every question id is unique — the id is also the storage key, so a
   collision would silently overwrite one answer with another;

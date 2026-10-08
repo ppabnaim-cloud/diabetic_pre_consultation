@@ -372,13 +372,19 @@ if (/<\?!?=?/.test(page)) fail('the page contains an Apps Script template tag');
    would let anyone into the nursing tab. */
 if (page.indexOf("nurseCode: '" + NURSE_CODE + "'") < 0) fail('the nursing code was not substituted');
 
-fs.writeFileSync(path.join(ROOT, 'index.html'), page);
+/* Emitted into public/ rather than the repository root. That is
+   the directory a static host serves by default, and it means the
+   deployed surface is exactly the one artefact -- not src/, not
+   build/, not tests/, not package.json. */
+const OUT_DIR = path.join(ROOT, 'public');
+fs.mkdirSync(OUT_DIR, { recursive: true });
+fs.writeFileSync(path.join(OUT_DIR, 'index.html'), page);
 
 /* ── 4. Report ─────────────────────────────────────────────── */
 const kb = n => (n / 1024).toFixed(1) + ' KB';
 const sections = M.SCHEMA.length;
 console.log('');
-console.log('  index.html built \u2014 ' + kb(page.length));
+console.log('  public/index.html built \u2014 ' + kb(page.length));
 console.log('    sections            : ' + sections);
 console.log('    questions           : ' + nFields);
 console.log('    conditional on other answers : ' + nConds);

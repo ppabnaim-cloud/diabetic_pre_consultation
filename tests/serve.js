@@ -16,7 +16,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = path.join(__dirname, '..');
+/* The built page only; the same thing a static host serves. */
+const ROOT = path.join(__dirname, '..', 'public');
 const PORT = +(process.env.PORT || 8099);
 
 const TYPES = {
