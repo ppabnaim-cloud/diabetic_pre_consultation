@@ -25,6 +25,7 @@ Five tabs:
 | **Soalan Anda** | Patient | 12 sections, 115 questions, 20 of them conditional. Demographics, diabetes history and medicines, symptoms, target-organ review, diet, home glucose readings with a chart, activity and step counts, insulin and hypoglycaemia, weight and sleep, mood and barriers, and the patient's own agenda. |
 | **Kaunter Jururawat** | Nursing staff | Two blood pressures with the mean computed against the CPG target, pulse and rhythm, capillary glucose, weight, height, waist, temperature, SpO₂, and a structured foot screen. Plus a printable QR card for the registration counter. |
 | **Tanya Panduan** | Patient | Opens the NotebookLM instance grounded solely in the two CPGs, with eight suggested questions the patient can copy, and a plain statement of what the tool cannot do. |
+| **Keadaan Negara** | Patient | The national picture, from NHMS 2023: how many Malaysian adults live with diabetes, how many do not know, how the weight and smoking trends have moved since 2011, and how common the habits this form just asked about actually are. Education only — it reads nothing from the patient's answers and never enters the doctor's note. |
 | **Kuiz Ringkas** | Patient | Eight public-level questions with an explanation after each. No mark is stored. Its only output is a list of topics the patient got wrong, which they may choose to pass to the doctor. |
 | **Ringkasan** | Doctor / staff | The generated note. Copy to clipboard, download as `.txt`, or print to PDF for upload to the HIS. |
 
@@ -166,6 +167,7 @@ and will be overwritten on the next build.
 | `src/schema.js` | Every question: wording in both languages, options, the condition it appears under, and the rule that decides whether the answer raises a flag. |
 | `src/i18n.js` | Interface strings. Question wording lives with the question, not here. |
 | `src/quiz.js` | The eight quiz items. Numbers are read from `CPG.*`, not typed. |
+| `src/nhms.js` | Every figure on the national-picture dashboard, each with the infographic and page it was read from. Unlike `cpg.js`, **these are verified** — read directly off the published booklet. |
 | `src/summary.js` | The note, the flag collection, the care-gap analysis. |
 | `src/app.js` | Rendering, state, storage, charts, tabs, export. |
 | `src/styles.html` | Design tokens and layout. |

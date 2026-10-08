@@ -39,7 +39,7 @@ var App = (function () {
   /* State. S is the patient's answers, N the counter's, Q the quiz. */
   var S = {}, N = {}, Q = { idx: 0, answers: [], started: false, carry: false };
   var UI = { tab: 'patient', sec: -1, consent: false, nurse: false,
-             ackFlags: false, showIc: false, nudged: {} };
+             ackFlags: false, showIc: false, sos: false, nudged: {} };
 
   var KEY = 'dmpc.v1.';
 
@@ -79,7 +79,7 @@ var App = (function () {
     } catch (e) {}
     S = {}; N = {}; Q = { idx: 0, answers: [], started: false, carry: false };
     UI = { tab: 'patient', sec: -1, consent: false, nurse: false,
-           ackFlags: false, showIc: false, nudged: {} };
+           ackFlags: false, showIc: false, sos: false, nudged: {} };
   }
 
   var flashTimer = null;
@@ -429,8 +429,11 @@ var App = (function () {
      ════════════════════════════════════════════════════════════ */
 
   function renderPatient() {
-    if (!UI.consent) return consentHtml();
-    if (UI.sec < 0) return welcomeHtml();
+    /* The entry gate is an overlay rendered into #gate by
+       renderNow(), not a page card, so the landing shows through
+       behind it exactly as the design intends. The landing is
+       built either way. */
+    if (UI.sec < 0 || !UI.consent) return welcomeHtml();
 
     var secs = sections();
     if (UI.sec >= secs.length) return doneHtml();
@@ -453,31 +456,76 @@ var App = (function () {
 
   function consentHtml() {
     var c = T.consent;
-    return '<div class="card card-consent"><h2>' + esc(t(c.h)) + '</h2>' +
-      '<ul class="plain">' +
-        '<li><b>' + esc(t(c.local)) + '</b></li>' +
-        '<li>' + esc(t(c.purpose)) + '</li>' +
-        '<li>' + esc(t(c.optional)) + '</li>' +
-        '<li>' + esc(t(c.erase)) + '</li>' +
-        '<li>' + esc(t(c.notDoctor)) + '</li>' +
-      '</ul>' +
+    return '<div class="modal-back"><div class="modal card-consent" role="dialog" aria-modal="true">' +
+      '<span class="badge">' + esc(t(T.app.badge)) + '</span>' +
+      '<h2>' + esc(t(T.app.title)) + '</h2>' +
+      '<p class="by">' + esc(t(T.app.by)) + '</p>' +
+      '<p><b>' + esc(t(c.local)) + '</b> ' + esc(t(c.purpose)) + '</p>' +
+      '<p>' + esc(t(c.optional)) + ' ' + esc(t(c.erase)) + '</p>' +
+      '<p><b>' + esc(t(c.notDoctor)) + '</b></p>' +
       '<p class="pdpa">' + esc(t(c.pdpa)) + '</p>' +
-      '<button type="button" class="btn btn-go btn-big" data-consent="1">' +
-        esc(t(c.agree)) + '</button></div>';
+      '<button type="button" class="btn-dark" data-consent="1">' + esc(t(c.agree)) + '</button>' +
+    '</div></div>';
+  }
+
+  /* ── The symptom strip and the panel it opens ───────────── */
+  function sosHtml() {
+    var h = '<button type="button" class="sos" data-sos="1">' +
+      '<span class="sos-ic" aria-hidden="true">\ud83d\ude91</span>' +
+      '<span class="sos-t">' + esc(t(T.sos.strip)) + '</span>' +
+      '<span class="sos-go">' + esc(t(T.sos.go)) + ' \u2192</span></button>';
+    if (!UI.sos) return h;
+    var it = T.sos.items;
+    h += '<div class="sos-panel"><h3>' + esc(t(T.sos.h)) + '</h3>' +
+      '<p>' + esc(t(T.sos.p)) + '</p><ul class="sos-list">' +
+      ['chest', 'breath', 'neuro', 'vision', 'foot', 'sugar', 'hypo'].map(function (k) {
+        return '<li>' + esc(t(it[k])) + '</li>';
+      }).join('') + '</ul>' +
+      '<p class="sos-call">' + esc(t(T.sos.call)) + ' <b>' + CPG.emergency.number + '</b></p>' +
+      '<button type="button" class="btn btn-sub" data-sos="1">' + esc(t(T.sos.close)) + '</button></div>';
+    return h;
   }
 
   function welcomeHtml() {
-    var w = T.welcome;
-    var has = Object.keys(S).length > 0;
-    return '<div class="card"><h2>' + esc(t(w.h)) + '</h2>' +
-      '<p class="big">' + esc(t(w.p1)) + '</p>' +
-      '<p>' + esc(t(w.p2)) + '</p>' +
-      '<p class="time">⏱ ' + esc(t(w.time)) + '</p>' +
-      '<button type="button" class="btn btn-go btn-big" data-start="1">' +
-        esc(has ? t(w.resume) : t(w.start)) + '</button>' +
-      (has ? '<button type="button" class="btn btn-sub" data-fresh="1">' +
-        esc(t(w.fresh)) + '</button>' : '') +
+    var w = T.welcome, c = T.land.cards, has = Object.keys(S).length > 0;
+    var h = '<section class="hero">' +
+      '<p class="eyebrow">' + esc(t(T.land.eyebrow)) + '</p>' +
+      '<h2>' + esc(t(w.h)) + '</h2>' +
+      '<p>' + esc(t(w.p1)) + '</p>' +
+      '<p class="hero-time">\u23f1 ' + esc(t(w.time)) + '</p>' +
+      '<button type="button" class="btn-hero" data-start="1">' +
+        esc(has ? t(w.resume) : t(w.start)) + ' \u2192</button>' +
+      (has ? '<button type="button" class="btn btn-sub" data-fresh="1" ' +
+             'style="background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.4);color:#fff">' +
+             esc(t(w.fresh)) + '</button>' : '') +
+    '</section>';
+
+    h += '<div class="grid-cards">' +
+      gcard('patient', '\ud83d\udc65', c.whyT, c.whyD) +
+      gcard('data',  '\ud83d\udcca', c.dataT, c.dataD) +
+      gcard('quiz',  '\ud83e\udde0', c.quizT, c.quizD) +
+      gcard('guide', '\ud83d\udcd3', c.guideT, c.guideD) +
     '</div>';
+
+    h += '<div class="card"><p class="eyebrow">' + esc(t(c.whyT)) + '</p>' +
+      '<h2>' + esc(t(T.land.whyH)) + '</h2><div class="feat">' +
+      ['a', 'b', 'c', 'd'].map(function (k) {
+        var f = T.land.why[k];
+        return '<div class="feat-item"><span class="feat-ic" aria-hidden="true">' + f.ic + '</span>' +
+          '<div><div class="feat-t">' + esc(t(f.t)) + '</div>' +
+          '<div class="feat-d">' + esc(t(f.d)) + '</div></div></div>';
+      }).join('') + '</div>' +
+      '<div class="notebox">\ud83d\udd12 ' + esc(t(T.consent.local)) + ' ' +
+        esc(t(T.consent.erase)) + '</div>' +
+      '<div class="infobox">\u2139\ufe0f ' + esc(t(T.foot.ground)) + '</div></div>';
+    return h;
+  }
+
+  function gcard(tab, ic, title, desc) {
+    return '<button type="button" class="gcard" data-tab="' + tab + '">' +
+      '<span class="gcard-ic" aria-hidden="true">' + ic + '</span>' +
+      '<span class="gcard-t">' + esc(t(title)) + '</span>' +
+      '<span class="gcard-d">' + esc(t(desc)) + '</span></button>';
   }
 
   function doneHtml() {
@@ -675,6 +723,90 @@ var App = (function () {
   }
 
   /* ════════════════════════════════════════════════════════════
+     NATIONAL PICTURE
+     Laid out like the cancer-registry panel it is a sibling of:
+     three tiles, then ranked bars under small grey subheads. The
+     figures come from src/nhms.js and are never mixed into the
+     doctor's note -- this tab is education, the summary is
+     clinical, and the two do not meet.
+     ════════════════════════════════════════════════════════════ */
+
+  function bars(rows, tone) {
+    var max = Math.max.apply(null, rows.map(function (r) { return r.pct; }));
+    return '<div class="barset">' + rows.map(function (r) {
+      return '<div class="bar-row">' +
+        '<div class="bar-l">' + esc(t(r.l)) +
+          (r.note ? '<small>' + esc(t(r.note)) + '</small>' : '') + '</div>' +
+        '<div class="bar-track"><div class="bar-fill' + (tone ? ' f-' + tone : '') +
+          '" style="width:' + Math.max(3, r.pct / max * 100).toFixed(1) + '%"></div></div>' +
+        '<div class="bar-v">' + r.pct + '%</div>' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+
+  function trend(series, tone) {
+    var max = Math.max.apply(null, series.pts.map(function (p) { return p.v; }));
+    return '<p class="dash-lead">' + esc(t(series.l)) + '</p><div class="trend">' +
+      series.pts.map(function (p) {
+        return '<div class="trend-col' + (tone ? ' is-' + tone : '') + '">' +
+          '<div class="trend-v">' + p.v + '%</div>' +
+          '<div class="trend-bar" style="height:' + Math.round(p.v / max * 110 + 18) + 'px"></div>' +
+          '<div class="trend-y">' + p.y + '</div></div>';
+      }).join('') + '</div>';
+  }
+
+  function renderData() {
+    var N2 = NHMS;
+    var h = '<div class="card">' +
+      '<p class="eyebrow">' + esc(t(T.data.eyebrow)) + '</p>' +
+      '<h2>' + esc(t(T.data.h)) + '</h2>' +
+      '<p>' + esc(t(T.data.lead)) + '</p>' +
+      '<div class="tiles">' +
+        tile(N2.headline.dm.big, N2.headline.dm.note, N2.headline.dm.lead) +
+        tile(t(N2.headline.unaware.lead), N2.headline.unaware.note) +
+        tile(N2.headline.control.big, N2.headline.control.note, null, true) +
+      '</div>' +
+      '<p class="subhead">' + esc(t(T.data.ncdH)) + '</p>' + bars(N2.ncd.rows) +
+      '<p class="dash-lead">' + esc(t(N2.ncd.combos)) + '</p>' +
+      '<p class="subhead">' + esc(t(T.data.hiddenH)) + '</p>' +
+      '<p class="dash-lead">' + esc(t(N2.hidden.lead)) + '</p>' + bars(N2.hidden.rows, 'amber') +
+      '<p class="subhead">' + esc(t(T.data.trendH)) + '</p>' +
+      trend(N2.trend.ow) + trend(N2.trend.ab) +
+      '<p class="subhead">' + esc(t(T.data.smokeH)) + '</p>' +
+      trend(N2.trend.smoke, 'amber') +
+      '<p class="dash-lead">' + esc(t(N2.trend.smoke.target)) + '</p>' +
+    '</div>';
+
+    h += '<div class="card">' +
+      '<p class="subhead" style="margin-top:0">' + esc(t(T.data.habitsH)) + '</p>' +
+      bars(N2.habits.rows, 'slate') +
+      '<p class="subhead">' + esc(t(T.data.whyH)) + '</p>' +
+      '<p class="dash-lead">' + esc(t(N2.whySkip.lead)) + '</p>' +
+      bars(N2.whySkip.rows, 'red') +
+      '<p class="subhead">' + esc(t(T.data.metsH)) + '</p>' +
+      '<p class="dash-lead">' + esc(t(N2.mets.lead)) + '</p>' +
+      bars(N2.mets.byBmi) +
+      '<div class="notebox">' + esc(t(N2.mets.note)) + '</div>' +
+    '</div>';
+
+    h += '<div class="card"><p class="eyebrow">' + esc(t(T.data.youH)) + '</p>' +
+      '<p class="big">' + esc(t(T.data.youP)) + '</p>' +
+      '<div class="infobox">' + esc(t(N2.mood.lead)) + ' \u2014 ' +
+        esc(t(N2.mood.helpline.label)) + ': <b>' + N2.mood.helpline.number + '</b></div>' +
+      '<p class="srcline"><b>' + esc(t(T.data.srcLabel)) + ':</b> ' + esc(t(N2.source.full)) +
+        ' <a href="' + esc(N2.source.url) + '" target="_blank" rel="noopener noreferrer">iku.nih.gov.my/nhms-2023</a>' +
+        '<br><b>' + esc(t(T.data.method)) + ':</b> ' + esc(t(N2.source.method)) + '</p>' +
+    '</div>';
+    return h;
+  }
+
+  function tile(big, cap, lead, amber) {
+    return '<div class="tile' + (amber ? ' is-amber' : '') + '">' +
+      '<div class="tile-big">' + esc(lead ? t(lead) : big) + '</div>' +
+      '<div class="tile-cap">' + esc(t(cap)) + '</div></div>';
+  }
+
+  /* ════════════════════════════════════════════════════════════
      GUIDELINE TAB
      ════════════════════════════════════════════════════════════ */
 
@@ -745,10 +877,14 @@ var App = (function () {
     if (Q.idx >= QUIZ.length) return quizResultHtml();
 
     var item = QUIZ[Q.idx], picked = Q.answers[Q.idx];
+    var pct = Math.round(Q.idx / QUIZ.length * 100);
     var h = '<div class="card card-quiz">' +
-      '<p class="sec-n">' + esc(t(T.quiz.q)) + ' ' + (Q.idx + 1) + ' ' +
-        esc(t(T.nav.of)) + ' ' + QUIZ.length + '</p>' +
+      '<p class="eyebrow">' + esc(t(T.tabs.quiz)) + '</p>' +
+      '<div class="qz-bar"><div class="qz-track"><div class="qz-fill" style="width:' +
+        pct + '%"></div></div>' +
+        '<span class="qz-n">' + esc(t(T.quiz.q)) + ' ' + (Q.idx + 1) + '/' + QUIZ.length + '</span></div>' +
       '<h2 class="qz-q">' + esc(t(item.q)) + '</h2><div class="opts">';
+    var LETTER = 'ABCDEFGH';
     item.opts.forEach(function (o, i) {
       var cls = 'opt';
       if (picked != null) {
@@ -758,7 +894,7 @@ var App = (function () {
       }
       h += '<button type="button" class="' + cls + '" data-pick="' + i + '"' +
         (picked != null ? ' disabled' : '') + '>' +
-        '<span class="opt-mark" aria-hidden="true"></span>' +
+        '<span class="opt-letter" aria-hidden="true">' + LETTER.charAt(i) + '</span>' +
         '<span class="opt-txt">' + esc(t(o)) + '</span></button>';
     });
     h += '</div>';
@@ -875,7 +1011,7 @@ var App = (function () {
      SHELL
      ════════════════════════════════════════════════════════════ */
 
-  var TABS = ['patient', 'nurse', 'guide', 'quiz', 'summary'];
+  var TABS = ['patient', 'data', 'guide', 'quiz', 'nurse', 'summary'];
 
   /* Replacing #main's innerHTML blurs whatever had focus, and a
      blur can fire a `change` that would call render() again from
@@ -896,9 +1032,16 @@ var App = (function () {
 
     $('#appTitle').textContent = t(T.app.title);
     $('#appSub').textContent = t(T.app.sub);
-    $('#langBtn').textContent = t(T.app.langBtn);
     $('#clearBtn').textContent = t(T.nav.clear);
     $('#saveChip').textContent = t(T.nav.saved);
+    $('#segMs').className = 'lang-seg' + (LANG === 'ms' ? ' on' : '');
+    $('#segEn').className = 'lang-seg' + (LANG === 'en' ? ' on' : '');
+
+    /* The symptom strip, on every tab. Hidden only while the
+       entry gate is up, because nothing behind the gate is
+       reachable yet. */
+    $('#sos').innerHTML = UI.consent ? sosHtml() : '';
+    $('#gate').innerHTML = UI.consent ? '' : consentHtml();
 
     var cm = Summary.completeness(S);
     var pr = $('#progress');
@@ -918,6 +1061,7 @@ var App = (function () {
     var main = $('#main');
     main.innerHTML =
       UI.tab === 'patient' ? renderPatient() :
+      UI.tab === 'data'    ? renderData()    :
       UI.tab === 'nurse'   ? renderNurse()   :
       UI.tab === 'guide'   ? renderGuide()   :
       UI.tab === 'quiz'    ? renderQuiz()    : renderSummary();
@@ -1218,6 +1362,7 @@ var App = (function () {
       return;
     }
     if (a('data-ack')) { UI.ackFlags = true; render(); return; }
+    if (a('data-sos')) { UI.sos = !UI.sos; render(); return; }
     if (a('data-sum')) {
       var mode = a('data-sum');
       if (mode === 'copy') copy(summaryText(false), null, t(T.sum.copied), t(T.sum.copyFail));

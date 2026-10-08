@@ -58,6 +58,7 @@ const fail = m => { console.error('\n  BUILD FAILED: ' + m + '\n'); process.exit
 const PARTIALS = {
   STYLES:  'src/styles.html',
   CPG:     'src/cpg.js',
+  NHMS:    'src/nhms.js',
   I18N:    'src/i18n.js',
   SCHEMA:  'src/schema.js',
   QUIZ:    'src/quiz.js',
@@ -78,11 +79,11 @@ const strip = s => s
   .replace(/^\s*<style>\n?/, '').replace(/<\/style>\s*$/, '');
 
 /* ── 2. Evaluate the clinical partials and assert ──────────── */
-const SANDBOX = strip(src.CPG) + '\n' + strip(src.I18N) + '\n' +
+const SANDBOX = strip(src.CPG) + '\n' + strip(src.NHMS) + '\n' + strip(src.I18N) + '\n' +
                 strip(src.SCHEMA) + '\n' + strip(src.QUIZ) + '\n' +
                 strip(src.SUMMARY) + '\n' +
                 'return { CPG: CPG, CPGcalc: CPGcalc, T: T, SCHEMA: SCHEMA, ' +
-                'QUIZ: QUIZ, Summary: Summary, L: L };';
+                'QUIZ: QUIZ, Summary: Summary, L: L, NHMS: NHMS };';
 
 let M;
 try {
@@ -347,6 +348,7 @@ const subs = {
   STYLES: src.STYLES,
   QRLIB: qrlib,
   CPG: src.CPG,
+  NHMS: src.NHMS,
   I18N: src.I18N,
   SCHEMA: src.SCHEMA,
   QUIZ: src.QUIZ,

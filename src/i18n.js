@@ -17,10 +17,16 @@ var T = {
 
   app: {
     title: L('Pra-Konsultasi Klinik Diabetik', 'Diabetes Clinic Pre-Consultation'),
-    sub: L('Hospital Tengku Permaisuri Norashikin, Kajang',
-           'Hospital Tengku Permaisuri Norashikin, Kajang'),
+    /* The header has room for a line, not a sentence. The
+       hospital's full name is on the printed note, where it
+       belongs. */
+    sub: L('Klinik Diabetik \u00b7 HTPN Kajang', 'Diabetes Clinic \u00b7 HTPN Kajang'),
     langBtn: L('English', 'Bahasa Malaysia'),
-    langFlag: L('EN', 'MY')
+    langFlag: L('EN', 'MY'),
+    badge: L('Prototaip klinikal \u00b7 bukan peranti perubatan',
+             'Clinical prototype \u00b7 not a medical device'),
+    by: L('Klinik Diabetik, HTPN Kajang \u00b7 berasaskan CPG KKM',
+          'Diabetes Clinic, HTPN Kajang \u00b7 grounded in the MOH CPGs')
   },
 
   tabs: {
@@ -28,6 +34,7 @@ var T = {
     nurse:   L('Kaunter Jururawat', 'Nursing Station'),
     guide:   L('Tanya Panduan', 'Ask the Guideline'),
     quiz:    L('Kuiz Ringkas', 'Short Quiz'),
+    data:    L('Keadaan Negara', 'The Picture'),
     summary: L('Ringkasan', 'Summary')
   },
 
@@ -37,6 +44,7 @@ var T = {
     nurse:   L('Untuk kakitangan sahaja', 'Staff only'),
     guide:   L('Jawapan berdasarkan CPG sahaja', 'Answers drawn from the CPGs only'),
     quiz:    L('Lapan soalan, tiada markah direkod', 'Eight questions, no mark is recorded'),
+    data:    L('Angka kebangsaan NHMS 2023', 'National figures, NHMS 2023'),
     summary: L('Untuk doktor muat naik ke HIS', 'For the doctor to upload to the HIS')
   },
 
@@ -288,6 +296,85 @@ var T = {
                   '{n} clinical values in this application have not been re-checked against the CPG PDFs. Do not use this summary for a clinical decision until that check is done.'),
     icMasked: L('Kad pengenalan ditutup di skrin. Salinan penuh ada di dalam fail yang dimuat turun.',
                 'The IC number is masked on screen. The full number is in the downloaded file.')
+  },
+
+  /* ── Persistent symptom strip ────────────────────────────── */
+  sos: {
+    strip: L('Ada gejala serius sekarang?', 'Having a serious symptom right now?'),
+    go: L('Tekan di sini', 'Tap here'),
+    h: L('Jangan tunggu giliran anda', 'Do not wait for your turn'),
+    p: L('Jika anda mengalami mana-mana perkara di bawah hari ini, berdiri dan beritahu kakitangan kaunter sekarang. Anda tidak perlu menunggu nama anda dipanggil, dan anda tidak akan menyusahkan sesiapa.',
+         'If you have any of the things below today, stand up and tell the counter staff now. You do not need to wait for your name to be called, and you will not be troubling anyone.'),
+    items: {
+      chest: L('Sakit, tekanan atau rasa berat di dada', 'Pain, pressure or heaviness in the chest'),
+      breath: L('Sesak nafas ketika duduk diam', 'Breathless while sitting still'),
+      neuro: L('Lemah sebelah badan, mulut terjuih, atau pertuturan pelat', 'Weakness on one side, a drooping mouth, or slurred speech'),
+      vision: L('Penglihatan hilang secara mengejut', 'Sudden loss of sight'),
+      foot: L('Luka terbuka, kawasan hitam, atau kaki merah dan panas', 'An open wound, a black area, or a red and hot foot'),
+      sugar: L('Muntah berulang, mengantuk, atau keliru', 'Repeated vomiting, drowsiness, or confusion'),
+      hypo: L('Menggigil dan berpeluh sejuk kerana gula rendah', 'Shaking and cold sweating from low sugar')
+    },
+    call: L('Jika anda rasa sangat tidak sihat, pergi ke Jabatan Kecemasan atau hubungi',
+            'If you feel very unwell, go to the Emergency Department or call'),
+    close: L('Tutup', 'Close')
+  },
+
+  /* ── Landing ─────────────────────────────────────────────── */
+  land: {
+    eyebrow: L('Mula di sini', 'Start here'),
+    cards: {
+      whyT: L('Mengapa borang ini?', 'Why this form?'),
+      whyD: L('Apa yang berubah apabila doktor sudah tahu', 'What changes when the doctor already knows'),
+      dataT: L('Keadaan di Malaysia', 'The picture in Malaysia'),
+      dataD: L('Angka kebangsaan NHMS 2023', 'National figures from NHMS 2023'),
+      quizT: L('Kuiz ringkas', 'Quick quiz'),
+      quizD: L('Lapan soalan, tiga minit', 'Eight questions, three minutes'),
+      guideT: L('Tanya panduan', 'Ask the guidelines'),
+      guideD: L('NotebookLM berasaskan CPG sahaja', 'A NotebookLM grounded only in the CPGs')
+    },
+    whyH: L('Masa menunggu tidak akan jadi lebih pendek. Tetapi ia boleh jadi berguna.',
+            'The wait is not going to get shorter. But it can be made useful.'),
+    why: {
+      a: { ic: '\u23f1', t: L('Masa doktor dihabiskan untuk perkara yang penting',
+                              'The doctor\u2019s time goes to what matters'),
+           d: L('Doktor tidak perlu bertanya semula perkara asas. Sejarah anda sudah ada di hadapan mereka sebelum anda masuk.',
+                'The doctor does not have to ask the basics again. Your history is in front of them before you walk in.') },
+      b: { ic: '\u26a0', t: L('Perkara berbahaya tidak tertinggal', 'Dangerous things do not get missed'),
+           d: L('Borang ini mengenal pasti gejala yang tidak patut ditunggu, dan memberitahu anda supaya beritahu kakitangan serta-merta.',
+                'The form picks up symptoms that should not wait, and tells you to speak to staff straight away.') },
+      c: { ic: '\ud83d\udcc8', t: L('Bacaan gula anda menjadi satu gambar', 'Your sugar readings become one picture'),
+           d: L('Masukkan bacaan daripada buku rekod anda dan borang mengira berapa peratus berada dalam julat sasaran CPG.',
+                'Enter the readings from your logbook and the form works out what share of them sit inside the CPG target range.') },
+      d: { ic: '\ud83d\udde3', t: L('Anda yang menentukan apa dibincangkan', 'You decide what gets discussed'),
+           d: L('Soalan terakhir bertanya apa yang paling penting kepada anda, dan itu dicetak di bahagian bawah nota doktor.',
+                'The last question asks what matters most to you, and that is printed at the foot of the doctor\u2019s note.') }
+    }
+  },
+
+  /* ── National picture dashboard ──────────────────────────── */
+  data: {
+    eyebrow: L('Keadaan di Malaysia', 'The picture in Malaysia'),
+    h: L('Apa yang data kebangsaan tunjukkan', 'What the national data tells us'),
+    lead: L('Angka terkini daripada Tinjauan Kebangsaan Kesihatan dan Morbiditi 2023. Ini sebabnya soalan tadi ditanya.',
+            'The latest figures from the National Health and Morbidity Survey 2023. These are the reasons the questions were asked.'),
+    ncdH: L('Hidup dengan apa — % orang dewasa Malaysia', 'Living with what — % of Malaysian adults'),
+    hiddenH: L('Tidak tahu mereka menghidapinya — % daripada yang terjejas',
+               'Do not know they have it — % of those affected'),
+    trendH: L('Semakin berat, tahun demi tahun — % orang dewasa',
+              'Getting heavier, year on year — % of adults'),
+    smokeH: L('Merokok, menurun tetapi belum mencapai sasaran — % orang dewasa',
+              'Smoking, falling but not yet on target — % of adults'),
+    habitsH: L('Tabiat yang ditanya oleh borang ini — % orang dewasa Malaysia',
+               'The habits this form asked about — % of Malaysian adults'),
+    whyH: L('Mengapa orang tidak membuat saringan — % daripada sebab yang diberi',
+            'Why people do not get screened — % giving each reason'),
+    metsH: L('Sindrom metabolik mengikut berat badan — % dalam setiap kumpulan',
+             'Metabolic syndrome by weight — % within each group'),
+    youH: L('Dan anda?', 'And you?'),
+    youP: L('Tiada apa-apa di halaman ini tentang diri anda. Ia tidak membaca jawapan anda dan tidak masuk ke dalam nota doktor. Ia di sini untuk satu sebab sahaja: apa yang anda jawab tadi mungkin terasa seperti kegagalan peribadi, sedangkan ia sebenarnya perkara biasa bagi kebanyakan orang dewasa di negara ini.',
+            'Nothing on this page is about you. It does not read your answers and it does not enter the doctor\u2019s note. It is here for one reason: what you answered earlier may feel like a personal failing, when it is in fact what most adults in this country report.'),
+    srcLabel: L('Sumber', 'Source'),
+    method: L('Kaedah', 'Method')
   },
 
   foot: {
