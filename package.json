@@ -1,0 +1,15 @@
+{
+  "name": "diabetic-pre-consultation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pre-consultation application for the diabetic clinic, Hospital Tengku Permaisuri Norashikin, Kajang. Clinical content grounded solely in the Malaysian CPGs for Type 2 Diabetes Mellitus (6th Ed, 2020) and Management of Obesity (2nd Ed, 2023).",
+  "scripts": {
+    "build": "node build/build.js",
+    "test": "node build/build.js && node tests/test_app.js",
+    "serve": "node tests/serve.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  },
+  "license": "UNLICENSED"
+}

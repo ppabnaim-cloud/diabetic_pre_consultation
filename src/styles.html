@@ -1,0 +1,582 @@
+<style>
+/* ============================================================
+   PRA-KONSULTASI DIABETIK — LAYOUT AND DESIGN TOKENS
+
+   WHO THIS IS DRAWN FOR
+     A patient in their fifties or sixties, on their own phone,
+     in a bright waiting area, possibly with diabetic retinopathy
+     or presbyopia, possibly reading Malay as a second language
+     after a regional one, and certainly not enjoying the wait.
+
+   What that forces:
+     - 17px base, never below 15px anywhere, and body text that
+       grows rather than shrinks on a small screen;
+     - every tappable thing at least 48px tall, because a numb
+       fingertip from diabetic neuropathy is a real input device
+       and a 32px radio button is not usable with one;
+     - answers as full-width cards, not inline radio dots, so the
+       whole row is the target;
+     - one question per block with generous separation, because a
+       dense form is where an elderly patient loses their place;
+     - light mode pinned. These are bright rooms, the page is
+       often read at arm's length in daylight, and a dark variant
+       would ship colours that have not been through the same
+       contrast checks as these.
+
+   DELIBERATELY SCROLLING
+     The sibling screens in this hospital's estate are built never
+     to scroll, because they are fixed wall displays. This is the
+     opposite case: a long form on a hand-held phone. It scrolls,
+     one section per screen, with the forward control always in
+     thumb reach at the end of the section.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces and ink. Shared with the hospital's other screens so
+     a patient moving between them sees one system. */
+  --page:      #eef2f5;
+  --surface:   #ffffff;
+  --surface-2: #f6f9fa;
+  --ink:       #14202a;
+  --ink-2:     #4a5763;
+  --ink-3:     #77848f;
+  --line:      #d7dee4;
+  --line-soft: #e8edf1;
+
+  --brand:     #0a7c82;
+  --brand-dk:  #055257;
+  --brand-lt:  #e0f5f6;
+  --accent:    #b35c00;
+
+  /* Status. Every one of these ships with a word or an icon as
+     well as the colour; nothing here is encoded by hue alone. */
+  --ok:       #0b7a3b;
+  --ok-lt:    #e4f6ea;
+  --warn:     #9a6100;
+  --warn-lt:  #fdf3e0;
+  --bad:      #b32626;
+  --bad-lt:   #fdebe9;
+
+  /* Glucose bands, used by the chart and the logbook rows. */
+  --glu-in:   #0b7a3b;
+  --glu-hi:   #b35c00;
+  --glu-lo1:  #c0392b;
+  --glu-lo2:  #8a1420;
+
+  --radius: 12px;
+  --shadow: 0 1px 2px rgba(20,32,42,.06), 0 4px 14px rgba(20,32,42,.05);
+  --tap: 48px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+html { -webkit-text-size-adjust: 100% }
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--page);
+  overflow-wrap: break-word;
+}
+
+.mono { font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace }
+
+/* Anything focusable keeps a visible ring. A patient navigating
+   this with a keyboard or a switch must never lose their place. */
+:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── HEADER ──────────────────────────────────────────────── */
+.hdr {
+  position: sticky; top: 0; z-index: 40;
+  background: linear-gradient(135deg, var(--brand-dk), var(--brand));
+  color: #fff;
+  padding: 10px max(14px, env(safe-area-inset-left)) 10px max(14px, env(safe-area-inset-right));
+  box-shadow: 0 2px 10px rgba(5,82,87,.18);
+}
+.hdr-row {
+  display: flex; align-items: center; gap: 10px;
+  max-width: 760px; margin: 0 auto; flex-wrap: wrap;
+}
+.hdr-id { flex: 1 1 100%; min-width: 0; order: 1 }
+.hdr-id h1 {
+  font-size: 16px; font-weight: 800; letter-spacing: -.01em;
+  /* body sets overflow-wrap: break-word so that a long Malay
+     compound in a patient's answer cannot widen the page. The
+     title is not patient input and must never be hyphenated
+     mid-word -- "Pra-Konsul / tasi" is not a word. */
+  overflow-wrap: normal; word-break: normal; hyphens: none;
+}
+.hdr-id p { font-size: 12px; opacity: .88; font-weight: 600 }
+
+/* Once there is room, the title and the buttons share one line. */
+@media (min-width: 560px) {
+  .hdr-id { flex: 1 1 auto; order: 0 }
+}
+
+.hdr-btn {
+  font: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+  min-height: 40px; padding: 8px 14px;
+  border: 1px solid rgba(255,255,255,.45);
+  background: rgba(255,255,255,.14); color: #fff;
+  border-radius: 999px; white-space: nowrap;
+}
+.hdr-btn:hover { background: rgba(255,255,255,.24) }
+.hdr-btn.is-quiet { border-color: rgba(255,255,255,.3); font-weight: 700 }
+
+#saveChip {
+  font-size: 12px; font-weight: 800; opacity: 0;
+  transition: opacity .25s; white-space: nowrap;
+  margin-left: auto; order: 2;
+}
+.hdr-btn { order: 3 }
+#saveChip.on { opacity: .95 }
+
+/* Progress. The only reason this exists is to answer the one
+   question a waiting patient actually has: how much is left. */
+#progress { max-width: 760px; margin: 8px auto 0 }
+.prog-track { height: 7px; background: rgba(255,255,255,.26); border-radius: 999px; overflow: hidden }
+.prog-fill { height: 100%; background: #fff; border-radius: 999px; transition: width .3s ease }
+#progTxt { font-size: 11px; font-weight: 700; opacity: .9; margin-top: 3px; display: block }
+
+/* ── TABS ────────────────────────────────────────────────── */
+.tabs {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; gap: 6px; overflow-x: auto;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  padding: 7px 10px; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tabs::-webkit-scrollbar { display: none }
+.tab {
+  font: inherit; cursor: pointer; text-align: left; flex: none;
+  min-height: 46px; padding: 6px 13px;
+  border: 1px solid var(--line); background: var(--surface-2);
+  border-radius: 999px; color: var(--ink-2);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.tab-t { font-size: 14px; font-weight: 800; white-space: nowrap }
+.tab-h { font-size: 10px; font-weight: 600; color: var(--ink-3); white-space: nowrap }
+.tab.on { background: var(--brand); border-color: var(--brand-dk); color: #fff }
+.tab.on .tab-h { color: rgba(255,255,255,.85) }
+
+/* ── SHELL ───────────────────────────────────────────────── */
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px max(16px, env(safe-area-inset-left)) 56px max(16px, env(safe-area-inset-right));
+}
+
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 18px; margin-bottom: 16px;
+}
+.card h2 { font-size: 20px; font-weight: 800; letter-spacing: -.015em; margin-bottom: 8px }
+.card h3 {
+  font-size: 15px; font-weight: 800; color: var(--brand-dk);
+  margin: 20px 0 8px; padding-top: 14px; border-top: 1px solid var(--line-soft);
+}
+.card h3:first-of-type { border-top: 0; padding-top: 0 }
+.card p { margin-bottom: 10px; color: var(--ink-2) }
+.card p.big { font-size: 18px; color: var(--ink) }
+.card p.time { font-weight: 700; color: var(--brand-dk) }
+
+.row-between { display: flex; align-items: flex-start; gap: 12px; justify-content: space-between; flex-wrap: wrap }
+
+ul.plain { list-style: none; margin: 0 0 12px }
+ul.plain li {
+  position: relative; padding: 7px 0 7px 26px;
+  color: var(--ink-2); border-bottom: 1px solid var(--line-soft);
+}
+ul.plain li::before {
+  content: '\2022'; position: absolute; left: 7px; top: 7px;
+  color: var(--brand); font-weight: 800;
+}
+ul.plain li:last-child { border-bottom: 0 }
+
+.pdpa { font-size: 13px; color: var(--ink-3); font-style: italic }
+.ref { font-size: 14px; color: var(--ink-2) }
+
+.warnbox {
+  background: var(--warn-lt); border: 1px solid #e8c88a;
+  border-left: 4px solid var(--warn);
+  border-radius: 8px; padding: 11px 13px;
+  font-size: 14px; color: #6b4400; margin-bottom: 12px;
+}
+.warnbox.is-hard {
+  background: var(--bad-lt); border-color: #eeb3ad;
+  border-left-color: var(--bad); color: #8a1f1f; font-weight: 700;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn {
+  font: inherit; font-size: 16px; font-weight: 800; cursor: pointer;
+  min-height: var(--tap); padding: 12px 20px;
+  border: 1.5px solid var(--line); background: var(--surface-2);
+  color: var(--ink); border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  text-decoration: none; text-align: center;
+}
+.btn:hover { background: #edf2f4 }
+.btn-go { background: var(--brand); border-color: var(--brand-dk); color: #fff }
+.btn-go:hover { background: var(--brand-dk) }
+.btn-big { width: 100%; font-size: 18px; min-height: 58px; margin-top: 6px }
+.btn-sub {
+  width: 100%; margin-top: 10px; font-size: 15px; font-weight: 700;
+  background: transparent; border-color: var(--line); color: var(--ink-2);
+}
+.btns { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px }
+.btns .btn { flex: 1 1 auto; min-width: 150px }
+.btn-add {
+  width: 100%; margin-top: 10px; font-size: 15px;
+  border-style: dashed; background: var(--surface);
+  border-color: var(--brand); color: var(--brand-dk);
+}
+
+/* ── SECTION ─────────────────────────────────────────────── */
+.sec { background: var(--surface); border: 1px solid var(--line);
+       border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px }
+.sec-top { display: flex; gap: 12px; align-items: center; margin-bottom: 10px }
+.sec-ic { font-size: 30px; line-height: 1; flex: none }
+.sec-n { font-size: 12px; font-weight: 800; color: var(--brand); text-transform: uppercase;
+         letter-spacing: .06em }
+.sec-top h2 { font-size: 21px; font-weight: 800; letter-spacing: -.015em }
+.sec-lead {
+  font-size: 15px; color: var(--ink-2);
+  background: var(--brand-lt); border-radius: 8px;
+  padding: 11px 13px; margin-bottom: 18px;
+}
+.sec-nav {
+  display: flex; gap: 12px; justify-content: space-between; align-items: center;
+  margin-top: 24px; padding-top: 18px; border-top: 2px solid var(--line-soft);
+}
+.sec-nav .btn { flex: 1 }
+.sec-nav .btn-go { flex: 2 }
+
+/* ── QUESTIONS ───────────────────────────────────────────── */
+.q { padding: 18px 0; border-bottom: 1px solid var(--line-soft) }
+.q:last-of-type { border-bottom: 0 }
+.q-label { display: block; font-size: 17px; font-weight: 700; margin-bottom: 4px; line-height: 1.4 }
+.q-key { color: var(--brand); font-size: 20px; vertical-align: middle }
+.q-hint { font-size: 14px; color: var(--ink-3); margin-bottom: 10px; line-height: 1.45 }
+.q-multi { font-size: 13px; font-weight: 700; color: var(--ink-3); margin-bottom: 7px }
+.q-in { margin-top: 10px }
+
+.q-flag { font-size: 14px; font-weight: 700; margin-top: 10px; padding: 9px 12px; border-radius: 8px }
+.q-flag.is-amber { background: var(--warn-lt); color: #6b4400; border-left: 4px solid var(--warn) }
+.q-flag.is-red { background: var(--bad-lt); color: #8a1f1f; border-left: 4px solid var(--bad) }
+.q-bad { font-size: 14px; font-weight: 700; color: var(--bad); margin-top: 7px }
+.q-good { font-size: 14px; font-weight: 700; color: var(--ok); margin-top: 7px }
+
+/* Inputs. Font-size must stay at 16px or above: below that, iOS
+   Safari zooms the whole page on focus and the patient loses the
+   form. */
+.in {
+  font: inherit; font-size: 17px; width: 100%;
+  min-height: var(--tap); padding: 11px 13px;
+  border: 1.5px solid var(--line); border-radius: 10px;
+  background: var(--surface); color: var(--ink);
+}
+.in:focus { border-color: var(--brand) }
+.in-area { line-height: 1.5; resize: vertical; min-height: 92px }
+.in-row { display: flex; align-items: stretch; gap: 8px }
+.in-num { max-width: 170px; text-align: right; font-variant-numeric: tabular-nums }
+.in-unit {
+  display: flex; align-items: center; font-size: 14px; font-weight: 700;
+  color: var(--ink-3); white-space: nowrap;
+}
+select.in { appearance: none; background-image:
+  linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
+  linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%;
+  background-size: 6px 6px, 6px 6px; background-repeat: no-repeat;
+  padding-right: 38px;
+}
+
+/* Options as full-width cards: the whole row is the tap target. */
+.opts { display: flex; flex-direction: column; gap: 9px }
+.opt {
+  display: flex; align-items: flex-start; gap: 12px;
+  min-height: var(--tap); padding: 12px 14px;
+  border: 1.5px solid var(--line); border-radius: 10px;
+  background: var(--surface); cursor: pointer;
+  font: inherit; font-size: 16px; text-align: left; width: 100%;
+  color: var(--ink);
+}
+.opt:hover { background: var(--surface-2); border-color: #bcc8d1 }
+.opt input { position: absolute; opacity: 0; width: 1px; height: 1px }
+.opt-mark {
+  flex: none; width: 24px; height: 24px; margin-top: 1px;
+  border: 2.5px solid #9fb0bb; border-radius: 50%;
+  background: var(--surface); position: relative;
+}
+.opt-mark.is-box { border-radius: 6px }
+.opt-txt { flex: 1; line-height: 1.4 }
+.opt.on { border-color: var(--brand); background: var(--brand-lt); font-weight: 700 }
+.opt.on .opt-mark { border-color: var(--brand); background: var(--brand) }
+.opt.on .opt-mark::after {
+  content: ''; position: absolute; inset: 0; margin: auto;
+  width: 9px; height: 9px; background: #fff; border-radius: 50%;
+}
+.opt.on .opt-mark.is-box::after {
+  width: 11px; height: 6px; background: transparent;
+  border: 0 solid #fff; border-left-width: 3px; border-bottom-width: 3px;
+  border-radius: 1px; transform: rotate(-45deg) translateY(-2px);
+}
+.opt:focus-within { outline: 3px solid var(--brand); outline-offset: 2px }
+
+/* 0-10 readiness scale */
+.scale { display: flex; gap: 5px; flex-wrap: wrap }
+.sc {
+  font: inherit; font-size: 16px; font-weight: 800; cursor: pointer;
+  flex: 1 1 auto; min-width: var(--tap); min-height: var(--tap);
+  border: 1.5px solid var(--line); border-radius: 9px;
+  background: var(--surface); color: var(--ink-2);
+}
+.sc.on { background: var(--brand); border-color: var(--brand-dk); color: #fff }
+.scale-ends {
+  display: flex; justify-content: space-between;
+  font-size: 12px; font-weight: 700; color: var(--ink-3); margin-top: 6px;
+}
+
+/* Computed read-outs (BMI, mean BP) */
+.calc {
+  font-size: 17px; font-weight: 700; padding: 13px 15px;
+  border-radius: 10px; border-left: 5px solid var(--line); background: var(--surface-2);
+  margin-top: 4px;
+}
+.calc b { font-size: 24px; font-variant-numeric: tabular-nums }
+.calc small { font-size: 13px; font-weight: 600; color: var(--ink-2) }
+.calc.is-ok   { background: var(--ok-lt);   border-left-color: var(--ok);   color: #0a5c2e }
+.calc.is-warn { background: var(--warn-lt); border-left-color: var(--warn); color: #6b4400 }
+.calc.is-bad  { background: var(--bad-lt);  border-left-color: var(--bad);  color: #8a1f1f }
+.calc.is-wait { color: var(--ink-3); font-weight: 600; font-size: 15px }
+.calc-note { font-size: 14px; color: var(--ink-2); margin-top: 8px }
+
+/* ── LOGBOOK TABLES ──────────────────────────────────────── */
+.log { margin-top: 6px }
+.log-head {
+  display: grid; grid-template-columns: 1.1fr .8fr 1.3fr 44px; gap: 7px;
+  font-size: 11px; font-weight: 800; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: .05em; padding: 0 2px 6px;
+}
+.log-row {
+  display: grid; grid-template-columns: 1.1fr .8fr 1.3fr 44px; gap: 7px;
+  align-items: center; padding: 7px 2px;
+  border-left: 4px solid transparent; border-radius: 6px;
+}
+.log-row .in { font-size: 16px; min-height: 46px; padding: 8px 10px }
+.log-row.b-in   { border-left-color: var(--glu-in);  background: var(--ok-lt) }
+.log-row.b-high { border-left-color: var(--glu-hi);  background: var(--warn-lt) }
+.log-row.b-low1 { border-left-color: var(--glu-lo1); background: var(--bad-lt) }
+.log-row.b-low2 { border-left-color: var(--glu-lo2); background: #fbdcd8 }
+.log-row2 {
+  display: grid; grid-template-columns: 1fr 120px auto; gap: 9px;
+  align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line-soft);
+}
+.log-lab { font-size: 15px; font-weight: 700; color: var(--ink-2) }
+.log-empty { font-size: 14px; color: var(--ink-3); padding: 12px 2px; line-height: 1.5 }
+.x {
+  font: inherit; font-size: 22px; line-height: 1; cursor: pointer;
+  width: 44px; height: 44px; border: 1.5px solid var(--line);
+  border-radius: 9px; background: var(--surface); color: var(--ink-3);
+}
+.x:hover { background: var(--bad-lt); border-color: var(--bad); color: var(--bad) }
+
+.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px }
+.stat {
+  flex: 1 1 110px; background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px;
+}
+.stat-k { display: block; font-size: 11px; font-weight: 700; color: var(--ink-3);
+          text-transform: uppercase; letter-spacing: .04em }
+.stat-v { display: block; font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums }
+
+/* ── CHARTS ──────────────────────────────────────────────── */
+.chart { width: 100%; height: auto; margin-top: 14px; display: block }
+.c-band { fill: var(--ok-lt); stroke: #9ad3b0; stroke-width: 1 }
+.c-hypo { stroke: var(--glu-lo1); stroke-width: 1.5; stroke-dasharray: 5 4 }
+.c-grid { stroke: var(--line-soft); stroke-width: 1 }
+.c-line { fill: none; stroke: #4a5763; stroke-width: 2; stroke-linejoin: round }
+.c-dot  { stroke: #fff; stroke-width: 1.5 }
+.c-dot.d-in   { fill: var(--glu-in) }
+.c-dot.d-high { fill: var(--glu-hi) }
+.c-dot.d-low1 { fill: var(--glu-lo1) }
+.c-dot.d-low2 { fill: var(--glu-lo2) }
+.c-ytick, .c-xtick { font-size: 13px; font-weight: 700; fill: var(--ink-3); text-anchor: end }
+.c-xtick { text-anchor: middle }
+.c-xlab { font-size: 12px; font-weight: 700; fill: var(--ink-3); text-anchor: middle }
+.c-note { font-size: 12px; font-weight: 600; fill: var(--ink-3) }
+.c-bar.b-ok  { fill: var(--ok) }
+.c-bar.b-mid { fill: #eda100 }
+.c-bar.b-low { fill: #9fb0bb }
+
+/* ── RED-FLAG BANNER ─────────────────────────────────────── */
+.alert { background: var(--bad); color: #fff; border-bottom: 4px solid #8a1420 }
+.alert-in { max-width: 760px; margin: 0 auto; padding: 16px }
+.alert-h { font-size: 19px; font-weight: 800; margin-bottom: 7px; line-height: 1.3 }
+.alert p { color: rgba(255,255,255,.95); margin-bottom: 9px }
+.alert ul { list-style: none; margin: 10px 0 }
+.alert li {
+  font-size: 15px; font-weight: 700; padding: 7px 0 7px 18px;
+  position: relative; border-top: 1px solid rgba(255,255,255,.26);
+}
+.alert li::before { content: '\203a'; position: absolute; left: 4px; font-size: 19px }
+.alert-ed { font-size: 16px; font-weight: 700 }
+.alert-ed b { font-size: 21px }
+.btn-ack {
+  background: #fff; border-color: #fff; color: var(--bad);
+  width: 100%; margin-top: 6px;
+}
+
+/* ── NURSING TAB ─────────────────────────────────────────── */
+.card-gate { max-width: 460px; margin: 28px auto }
+.gate-bad { color: var(--bad); font-weight: 800; font-size: 15px }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 14px }
+.nf { display: flex; flex-direction: column; gap: 5px }
+.nf > span { font-size: 13px; font-weight: 800; color: var(--ink-2) }
+.flaglist { list-style: none; margin: 8px 0 }
+.flaglist li {
+  font-size: 15px; font-weight: 700; padding: 10px 13px; margin-bottom: 7px;
+  border-radius: 8px; border-left: 5px solid var(--line);
+}
+.flaglist li.is-red   { background: var(--bad-lt);  border-left-color: var(--bad);  color: #8a1f1f }
+.flaglist li.is-amber { background: var(--warn-lt); border-left-color: var(--warn); color: #6b4400 }
+
+.card-qr .qrwrap { display: flex; gap: 18px; align-items: center; flex-wrap: wrap }
+.qr { flex: none; width: 150px }
+.qr svg { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px }
+.qr-url { font-size: 13px; color: var(--ink-2); word-break: break-all }
+.qr-cap { font-size: 15px; font-weight: 800; color: var(--brand-dk) }
+
+/* ── GUIDELINE TAB ───────────────────────────────────────── */
+.asks { display: flex; flex-direction: column; gap: 9px }
+.ask {
+  font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  text-align: left; min-height: var(--tap); padding: 12px 14px;
+  border: 1.5px solid var(--line); border-radius: 10px;
+  background: var(--surface-2); color: var(--ink);
+}
+.ask:hover { border-color: var(--brand); background: var(--brand-lt) }
+.ask::before { content: '\201c' }
+.ask::after  { content: '\201d  \1f4cb' }
+ul.refs { list-style: none }
+ul.refs li { padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px }
+ul.refs a { color: var(--brand-dk); font-weight: 700 }
+
+/* ── QUIZ ────────────────────────────────────────────────── */
+.qz-q { font-size: 20px; line-height: 1.35; margin: 4px 0 16px }
+.opt.qz-done { cursor: default }
+.opt.qz-right { border-color: var(--ok); background: var(--ok-lt); font-weight: 800 }
+.opt.qz-right .opt-mark { border-color: var(--ok); background: var(--ok) }
+.opt.qz-wrong { border-color: var(--bad); background: var(--bad-lt) }
+.opt.qz-wrong .opt-mark { border-color: var(--bad); background: var(--bad) }
+.qz-why {
+  margin-top: 16px; padding: 14px 16px; border-radius: 10px;
+  border-left: 5px solid var(--line); background: var(--surface-2);
+}
+.qz-why.is-ok { background: var(--ok-lt); border-left-color: var(--ok) }
+.qz-why.is-no { background: var(--warn-lt); border-left-color: var(--warn) }
+.qz-verdict { font-size: 17px; font-weight: 800; margin-bottom: 7px; color: var(--ink) }
+.qz-why p { color: var(--ink-2) }
+.qz-src { font-size: 12px; font-weight: 700; color: var(--ink-3); margin-bottom: 0 }
+.card-quiz .btn-go { width: 100%; margin-top: 14px }
+
+/* ── DONE / SUMMARY ──────────────────────────────────────── */
+.card-done { text-align: center }
+.card-done .tick {
+  width: 66px; height: 66px; margin: 4px auto 14px;
+  border-radius: 50%; background: var(--ok-lt); color: var(--ok);
+  font-size: 36px; font-weight: 800; line-height: 66px;
+}
+.card-done ul.plain { text-align: left }
+.card-done .opt { text-align: left }
+
+.note {
+  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px; line-height: 1.45;
+  white-space: pre; overflow-x: auto;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 14px; color: var(--ink);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── FOOTER ──────────────────────────────────────────────── */
+.foot {
+  max-width: 760px; margin: 0 auto;
+  padding: 22px 16px 40px; font-size: 13px; color: var(--ink-3);
+  border-top: 1px solid var(--line);
+}
+.foot p { margin-bottom: 7px; line-height: 1.5 }
+.foot b { color: var(--ink-2) }
+
+/* ── NARROW PHONES ───────────────────────────────────────── */
+@media (max-width: 420px) {
+  body { font-size: 16px }
+  .wrap { padding-left: 12px; padding-right: 12px }
+  .card, .sec { padding: 15px; border-radius: 10px }
+  .sec-top h2, .card h2 { font-size: 19px }
+  .tab-h { display: none }
+  .log-head { display: none }
+  /* The logbook becomes one block per reading rather than a grid
+     that would squeeze three inputs into 300px. */
+  .log-row {
+    grid-template-columns: 1fr 44px;
+    grid-template-areas: 'd x' 'v x' 'c x';
+    gap: 6px; padding: 10px; margin-bottom: 9px;
+    border: 1px solid var(--line); border-left-width: 4px;
+  }
+  .log-row > *:nth-child(1) { grid-area: d }
+  .log-row > *:nth-child(2) { grid-area: v }
+  .log-row > *:nth-child(3) { grid-area: c }
+  .log-row > .x { grid-area: x; align-self: start }
+  .in-num { max-width: none }
+  .qr { width: 125px }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important }
+}
+
+/* ── PRINT ───────────────────────────────────────────────────
+   Two print paths, each selected by a class the button adds just
+   before window.print(). Without one of them nothing prints but a
+   reminder, because a patient hitting Ctrl+P on the questionnaire
+   should not produce forty pages of form controls.
+   ─────────────────────────────────────────────────────────── */
+.print-only { display: none }
+
+@media print {
+  @page { size: A4; margin: 14mm }
+
+  body { background: #fff; font-size: 11pt }
+  .hdr, .tabs, #progress, .foot, .btn, .btns, .sec-nav,
+  .alert .btn-ack, .asks { display: none !important }
+  .card, .sec { box-shadow: none; border: 1px solid #ccc; break-inside: avoid }
+  .print-only { display: block }
+
+  /* The HIS note on its own, at a size that photocopies. */
+  body.print-note .wrap > .card:not(:last-child) { display: none }
+  body.print-note .note {
+    font-size: 9.5pt; line-height: 1.35; white-space: pre-wrap;
+    border: 0; background: #fff; padding: 0;
+  }
+  body.print-note .card { border: 0; padding: 0 }
+
+  /* The counter card on its own, QR enlarged for a standing card. */
+  body.print-qr .wrap > .card:not(.card-qr) { display: none }
+  body.print-qr .card-qr { border: 0; text-align: center }
+  body.print-qr .qrwrap { justify-content: center; display: block }
+  body.print-qr .qr { width: 95mm; margin: 0 auto 8mm }
+  body.print-qr .qr-cap { font-size: 20pt }
+  body.print-qr .qr-url { font-size: 10pt }
+}
+</style>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="description" content="Borang pra-konsultasi untuk Klinik Diabetik. Diisi oleh pesakit sementara menunggu. Kandungan klinikal berasaskan CPG Diabetes Mellitus Jenis 2 (Edisi ke-6, 2020) dan CPG Pengurusan Obesiti (Edisi ke-2, 2023), Kementerian Kesihatan Malaysia."/>
+<title>Pra-Konsultasi Klinik Diabetik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a7c82'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fff' font-family='sans-serif' font-weight='bold'%3ED%3C/text%3E%3C/svg%3E"/>
+{{STYLES}}
+</head>
+<body>
+
+<!-- ============================================================
+     PRA-KONSULTASI KLINIK DIABETIK
+     Hospital Tengku Permaisuri Norashikin, Kajang
+
+     This file is GENERATED. Edit the partials in src/ and run
+     `npm run build`; editing index.html directly will be
+     overwritten on the next build. See README.md.
+
+     Everything the page needs is inlined: no bundler at serve
+     time, no API, no database, one HTTP request plus the web
+     font. It can be served from any static host, opened from a
+     USB stick, or kept on a clinic tablet with no network at all.
+     ============================================================ -->
+
+<header class="hdr">
+  <div class="hdr-row">
+    <div class="hdr-id">
+      <h1 id="appTitle">Pra-Konsultasi Klinik Diabetik</h1>
+      <p id="appSub">Hospital Tengku Permaisuri Norashikin, Kajang</p>
+    </div>
+    <span id="saveChip" aria-live="polite">Disimpan</span>
+    <button type="button" class="hdr-btn" id="langBtn">English</button>
+    <button type="button" class="hdr-btn is-quiet" id="clearBtn">Padam semua</button>
+  </div>
+  <div id="progress" hidden>
+    <div class="prog-track"><div class="prog-fill" id="progBar" style="width:0%"></div></div>
+    <span id="progTxt"></span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs" aria-label="Bahagian aplikasi"></nav>
+
+<div id="banner" aria-live="assertive"></div>
+
+<main class="wrap" id="main"></main>
+
+<footer class="foot">
+  <p id="footNot"></p>
+  <p id="footGround"></p>
+  <p class="print-only"><b>Pra-Konsultasi Klinik Diabetik</b> &middot; HTPN Kajang &middot; {{VERSION}}</p>
+  <p><b>{{VERSION}}</b></p>
+</footer>
+
+<noscript>
+  <div class="wrap"><div class="card">
+    <h2>JavaScript diperlukan</h2>
+    <p>Borang ini memerlukan JavaScript untuk berfungsi. Sila beritahu kakitangan
+       kaunter, dan mereka akan memberikan borang bercetak.</p>
+    <p><b>JavaScript is required.</b> This form needs JavaScript in order to work.
+       Please tell the counter staff and they will give you a paper form.</p>
+  </div></div>
+</noscript>
+
+<script>
+/* Deployment configuration. These are the only values a clinic
+   should need to change, and they are set here rather than buried
+   in the application so that changing them needs no knowledge of
+   the code.
+
+   nurseCode is a SPEED BUMP, NOT SECURITY. The whole application
+   runs in the browser, so anyone who views the page source can
+   read this string. It exists to stop a patient wandering into
+   the nursing tab by accident, nothing more. Never set it to a
+   password used anywhere else. */
+window.DMPC_CONFIG = {
+  nurseCode: '{{NURSE_CODE}}',
+  notebookUrl: '{{NOTEBOOK_URL}}',
+  version: '{{VERSION}}'
+};
+</script>
+
+{{QRLIB}}
+{{CPG}}
+{{I18N}}
+{{SCHEMA}}
+{{QUIZ}}
+{{SUMMARY}}
+{{APP}}
+
+</body>
+</html>
